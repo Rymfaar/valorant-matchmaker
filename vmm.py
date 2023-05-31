@@ -10,31 +10,31 @@ class Roles(Enum):
     DUELIST = "duelist"
     SENTINEL = "sentinel"
 
-class RankValue(IntEnum):
+class PlayerRankValue(IntEnum):
     UNRANKED = 0
     IRON = 150
     BRONZE = 450
     SILVER = 750
     GOLD = 1050
-    PLATINIUM = 1350
+    PLATINUM = 1350
     DIAMOND = 1650
 
-class RankEnum(Enum):
+class PlayerRankEnum(Enum):
     UNRANKED = "Unranked"
     IRON = "Iron"
     BRONZE = "Bronze"
     SILVER = "Silver"
     GOLD = "Gold"
-    PLATINIUM = "Platinum"
+    PLATINUM = "Platinum"
     DIAMOND = "Diamond"
 
 @dataclass
 class Rank: 
-    rank: RankEnum
-    rank_value: RankValue
-    def __init__(self, rank: RankEnum):
+    rank: PlayerRankEnum
+    rank_value: PlayerRankValue
+    def __init__(self, rank: PlayerRankEnum):
         self.rank = rank
-        self.rank_value = RankValue[rank.name]
+        self.rank_value = PlayerRankValue[rank.name]
 
 @dataclass
 class Player:
@@ -56,13 +56,13 @@ class Player:
                 f'agency={self.agency}, rank={str(self.rank.rank.value)}, rank_value={str(self.rank.rank_value.value)}, role={self.role.value}, '
                 f'comment={self.comment})')
 
-def get_players_from_csv_file(filename:str)->list[Player]:
-    """Get players from a csv file"""   
+def load_players_from_csv_file(csv_file_path:str)->list[Player]:
+    """Get players from a csv file"""
     players = []
-    with open(filename, 'r') as csvfile:
+    with open(csv_file_path, 'r') as csvfile:
         csvreader = csv.DictReader(csvfile)
         for row in csvreader:
-            rank = Rank(RankEnum[row['Rank'].upper()])
+            rank = Rank(PlayerRankEnum[row['Rank'].upper()])
             role = Roles[row['Rôle principal'].upper()]
             players.append(Player(row['Nom + Prénom (@)'], row['Tag Valorant'], row['Tag Discord'], row['Agence'], rank, role, row['Commentaires']))
     return players
@@ -71,6 +71,7 @@ def get_players_from_csv_file(filename:str)->list[Player]:
 def generate_teams(players: list[Player], number_of_teams: int) -> Union[list[list[Player]], list[Player]]:
     """Generate teams from a list of players"""
     teams = [[] for _ in range(number_of_teams)]
+    # Sort players by rank_value in descending order
     players.sort(key=lambda player: player.rank.rank_value, reverse=True)
     left_players = []
 
@@ -84,15 +85,12 @@ def generate_teams(players: list[Player], number_of_teams: int) -> Union[list[li
             teams[min_avg_rank_value_team].append(player)
         else:
             left_players.append(player)
-            
+    # Return the teams and the players that couldn't be added to a team
     return teams, left_players
 
 
 
-players = get_players_from_csv_file('./Valorant.csv')
-# for player in players:
-#     print(player)
-
+players = load_players_from_csv_file('./Valorant.csv')
 teams,left_players = generate_teams(players, 3)
 print(f"Teams: {teams}")
 print(f"Left players: {left_players}")
