@@ -146,8 +146,9 @@ def generate_teams(
         teams.sort(key=lambda team: sum(player.rank.rank_value for player in team))
         for team in teams:
             # Check if team is not full and add player to the team if it is not full or to the next team with the lowest sum
-            if len(team) < NUMBER_OF_PLAYERS_PER_TEAM:
+            if player not in team and len(team) < NUMBER_OF_PLAYERS_PER_TEAM:
                 team.append(player)
+                break
     # Check if there are teams with less than 5 players and move those players to `left_players`
     for team in teams:
         if len(team) < NUMBER_OF_PLAYERS_PER_TEAM:
@@ -159,7 +160,7 @@ def generate_teams(
 
 
 def calculate_average_rank(player_team: List[Player]) -> float:
-    if not team:
+    if not player_team:
         raise ValueError("Team can't be empty.")
     total = sum(player.rank.rank_value for player in player_team)
     return total / len(player_team)
@@ -167,6 +168,6 @@ def calculate_average_rank(player_team: List[Player]) -> float:
 
 player_list = load_players_from_csv_file("./Valorant.csv")
 teams_of_player_list, left_players_list  = generate_teams(player_list, NUMBER_OF_TEAMS)
-for team in teams_of_player_list:
-    print(f"Team: {team}\n Average Rank: {calculate_average_rank(team)}\n\n")
+for team_of_player in teams_of_player_list:
+    print(f"Team: {team_of_player}\n Average Rank: {calculate_average_rank(team_of_player)}\n\n")
 print(f"Left players: {left_players_list}")
